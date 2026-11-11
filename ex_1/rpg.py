@@ -1,3 +1,10 @@
+def log_action(func):
+    def wrapper(self, *args, **kwargs):
+        print(f"{self.name} → {func.__name__}")
+        return func(self, *args, **kwargs)
+    return wrapper
+
+
 class Character:
     count = 0
 
@@ -22,6 +29,7 @@ class Character:
     def is_alive(self):
         return self.hp > 0
 
+    @log_action
     def attack(self, target):
         target.take_damage(5)
 
@@ -40,6 +48,7 @@ class Warrior(Character):
         super().__init__(name, hp, level)
         self.strength = strength
 
+    @log_action
     def attack(self, target):
         target.take_damage(self.strength)
 
@@ -52,6 +61,7 @@ class Mage(Character):
     def __str__(self):
         return super().__str__() + f" MP {self.mana}"
 
+    @log_action
     def attack(self, target):
         if self.mana >= 10:
             self.mana -= 10
@@ -61,6 +71,7 @@ class Mage(Character):
 
 
 class HealerMixin:
+    @log_action
     def heal(self, target, amount):
         target.hp += amount
 
@@ -70,6 +81,21 @@ class HealerMixin:
 # heal-ს პოულობს HealerMixin-ში, attack-ს Mage-ში, take_damage-ს Character-ში.
 class Priest(HealerMixin, Mage):
     pass
+
+
+class Inventory:
+    def __init__(self):
+        self.items = []
+
+    def add(self, **item):
+        self.items.append(item)
+
+    def find(self, **filters):
+        return [item for item in self.items
+                if all(item.get(key) == value for key, value in filters.items())]
+
+    def __len__(self):
+        return len(self.items)
 
 
 if __name__ == "__main__":
@@ -105,3 +131,16 @@ if __name__ == "__main__":
     print(type(w).__name__)                    # Warrior
     print(Character.is_valid_name("T"))        # False
     print(Character("A") == Character("A"))    # True
+
+    # სავარჯიშო 4
+    inv = Inventory()
+    inv.add(name="sword", kind="weapon", power=10)
+    inv.add(name="potion", kind="heal", power=30)
+
+    print(len(inv))                  # 2
+    print(inv.find(kind="weapon"))   # [{'name': 'sword', 'kind': 'weapon', 'power': 10}]
+    print(inv.find(kind="heal", power=30))   # [{'name': 'potion', 'kind': 'heal', 'power': 30}]
+
+    t = Warrior("Tariel")
+    n = Mage("Nestan")
+    t.attack(n)                      # Tariel → attack
