@@ -12,8 +12,6 @@ class Character:
         self.name = name
         self.hp = hp
         self.level = level
-        # Character.count და არა self.count, რადგან self.count += 1
-        # ობიექტზე ახალ ატრიბუტს შექმნიდა და საერთო მთვლელი არ გაიზრდებოდა
         Character.count += 1
 
     def __str__(self):
@@ -76,9 +74,6 @@ class HealerMixin:
         target.hp += amount
 
 
-# Priest.__mro__ -> Priest, HealerMixin, Mage, Character, object
-# Python მეთოდს ამ რიგით ეძებს და იყენებს პირველს, რასაც იპოვის.
-# heal-ს პოულობს HealerMixin-ში, attack-ს Mage-ში, take_damage-ს Character-ში.
 class Priest(HealerMixin, Mage):
     pass
 
@@ -108,62 +103,56 @@ def battle(a, b):
 
 
 if __name__ == "__main__":
-    # სავარჯიშო 1
     a = Character("Tariel")
     b = Character("Avtandil", hp=50)
     b.take_damage(70)
 
-    print(a)                 # Tariel (Lv 1, HP 100)
-    print(b)                 # Avtandil (Lv 1, HP 0)
-    print(b.is_alive)        # False
-    print(Character.count)   # 2
+    print(a)
+    print(b)
+    print(b.is_alive)
+    print(Character.count)
 
-    # სავარჯიშო 2
     t = Warrior("Tariel", hp=120, strength=15)
     n = Mage("Nestan", hp=80, mana=15)
 
     t.attack(n)
-    print(n)    # Nestan (Lv 1, HP 65) MP 15
+    print(n)
 
-    n.attack(t)   # 20 ზიანი, mana-ს 5 რჩება
-    n.attack(t)   # mana არ ჰყოფნის: 5 ზიანი
-    print(t)    # Tariel (Lv 1, HP 95)
+    n.attack(t)
+    n.attack(t)
+    print(t)
 
-    # სავარჯიშო 3
     print(Priest.__mro__)
 
     p = Priest("Nestan", hp=60)
     w = Warrior.from_string("Tariel;120")
 
     p.heal(w, 30)
-    print(w)                                   # Tariel (Lv 1, HP 150)
-    print(type(w).__name__)                    # Warrior
-    print(Character.is_valid_name("T"))        # False
-    print(Character("A") == Character("A"))    # True
+    print(w)
+    print(type(w).__name__)
+    print(Character.is_valid_name("T"))
+    print(Character("A") == Character("A"))
 
-    # სავარჯიშო 4
     inv = Inventory()
     inv.add(name="sword", kind="weapon", power=10)
     inv.add(name="potion", kind="heal", power=30)
 
-    print(len(inv))                  # 2
-    print(inv.find(kind="weapon"))   # [{'name': 'sword', 'kind': 'weapon', 'power': 10}]
-    print(inv.find(kind="heal", power=30))   # [{'name': 'potion', 'kind': 'heal', 'power': 30}]
+    print(len(inv))
+    print(inv.find(kind="weapon"))
+    print(inv.find(kind="heal", power=30))
 
     t = Warrior("Tariel")
     n = Mage("Nestan")
-    t.attack(n)                      # Tariel → attack
+    t.attack(n)
 
-    # ბონუსი
     winner = battle(Warrior("Tariel", hp=120), Mage("Nestan", hp=80))
     print(f"გამარჯვებული: {winner.name}")
 
-    # საბოლოო მიზანი
-    Character.count = 0   # ზემოთ უკვე შეიქმნა პერსონაჟები, ამიტომ თავიდან ვითვლით
+    Character.count = 0
     tariel = Warrior("Tariel", hp=120, strength=15)
     nestan = Mage("Nestan", hp=80, mana=50)
 
     tariel.attack(nestan)
-    print(nestan)            # Nestan (Lv 1, HP 65) MP 50
-    print(nestan.is_alive)   # True
-    print(Character.count)   # 2
+    print(nestan)
+    print(nestan.is_alive)
+    print(Character.count)
