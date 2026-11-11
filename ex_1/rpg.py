@@ -98,6 +98,15 @@ class Inventory:
         return len(self.items)
 
 
+def battle(a, b):
+    attacker, defender = a, b
+    while a.is_alive and b.is_alive:
+        attacker.attack(defender)
+        print(a, "|", b)
+        attacker, defender = defender, attacker
+    return a if a.is_alive else b
+
+
 if __name__ == "__main__":
     # სავარჯიშო 1
     a = Character("Tariel")
@@ -144,3 +153,17 @@ if __name__ == "__main__":
     t = Warrior("Tariel")
     n = Mage("Nestan")
     t.attack(n)                      # Tariel → attack
+
+    # ბონუსი
+    winner = battle(Warrior("Tariel", hp=120), Mage("Nestan", hp=80))
+    print(f"გამარჯვებული: {winner.name}")
+
+    # საბოლოო მიზანი
+    Character.count = 0   # ზემოთ უკვე შეიქმნა პერსონაჟები, ამიტომ თავიდან ვითვლით
+    tariel = Warrior("Tariel", hp=120, strength=15)
+    nestan = Mage("Nestan", hp=80, mana=50)
+
+    tariel.attack(nestan)
+    print(nestan)            # Nestan (Lv 1, HP 65) MP 50
+    print(nestan.is_alive)   # True
+    print(Character.count)   # 2
