@@ -12,6 +12,9 @@ class Character:
     def __str__(self):
         return f"{self.name} (Lv {self.level}, HP {self.hp})"
 
+    def __eq__(self, other):
+        return self.name == other.name and self.level == other.level
+
     def take_damage(self, amount):
         self.hp = max(self.hp - amount, 0)
 
@@ -21,6 +24,15 @@ class Character:
 
     def attack(self, target):
         target.take_damage(5)
+
+    @classmethod
+    def from_string(cls, text):
+        name, hp = text.split(";")
+        return cls(name, hp=int(hp))
+
+    @staticmethod
+    def is_valid_name(name):
+        return 2 <= len(name) <= 20
 
 
 class Warrior(Character):
@@ -48,6 +60,18 @@ class Mage(Character):
             super().attack(target)
 
 
+class HealerMixin:
+    def heal(self, target, amount):
+        target.hp += amount
+
+
+# Priest.__mro__ -> Priest, HealerMixin, Mage, Character, object
+# Python მეთოდს ამ რიგით ეძებს და იყენებს პირველს, რასაც იპოვის.
+# heal-ს პოულობს HealerMixin-ში, attack-ს Mage-ში, take_damage-ს Character-ში.
+class Priest(HealerMixin, Mage):
+    pass
+
+
 if __name__ == "__main__":
     # სავარჯიშო 1
     a = Character("Tariel")
@@ -69,3 +93,15 @@ if __name__ == "__main__":
     n.attack(t)   # 20 ზიანი, mana-ს 5 რჩება
     n.attack(t)   # mana არ ჰყოფნის: 5 ზიანი
     print(t)    # Tariel (Lv 1, HP 95)
+
+    # სავარჯიშო 3
+    print(Priest.__mro__)
+
+    p = Priest("Nestan", hp=60)
+    w = Warrior.from_string("Tariel;120")
+
+    p.heal(w, 30)
+    print(w)                                   # Tariel (Lv 1, HP 150)
+    print(type(w).__name__)                    # Warrior
+    print(Character.is_valid_name("T"))        # False
+    print(Character("A") == Character("A"))    # True
